@@ -1,0 +1,7 @@
+services:
+  notebook:
+    build: .
+    ports:
+      - "8080:8888"
+    volumes:
+      - .:/home/jovyan/work
