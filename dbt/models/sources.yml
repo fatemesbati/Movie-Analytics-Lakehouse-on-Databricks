@@ -1,0 +1,37 @@
+version: 2
+
+sources:
+  - name: raw
+    database: "{{ env_var('GCP_PROJECT_ID') }}"
+    schema: movielens_raw
+    description: Raw MovieLens tables loaded from CSV via the BigQuery loader script
+    tables:
+      - name: ratings
+        description: 100k+ user ratings (userId, movieId, rating, timestamp)
+        columns:
+          - name: userId
+            description: User identifier
+          - name: movieId
+            description: Movie identifier
+          - name: rating
+            description: Rating on a 0.5–5.0 scale
+          - name: timestamp
+            description: Unix timestamp of the rating event
+
+      - name: movies
+        description: Movie metadata (movieId, title, genres)
+        columns:
+          - name: movieId
+            description: Movie identifier
+          - name: title
+            description: Movie title including release year in parentheses
+          - name: genres
+            description: Pipe-separated genre list
+
+      - name: tags
+        description: Free-text tags applied by users to movies
+        columns:
+          - name: userId
+          - name: movieId
+          - name: tag
+          - name: timestamp

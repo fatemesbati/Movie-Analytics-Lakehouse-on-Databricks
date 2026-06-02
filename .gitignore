@@ -1,8 +1,33 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
+.venv/
+venv/
+
+# Data / generated output
 delta/
 data/raw/
+charts/
 .ipynb_checkpoints/
+
+# Secrets — never commit credentials
+secrets/
+*.json
+
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars
+terraform/*.tfstate
+terraform/*.tfstate.backup
+
+# dbt
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+
+# OS
 .DS_Store
+Thumbs.db

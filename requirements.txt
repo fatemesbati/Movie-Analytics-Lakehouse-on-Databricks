@@ -3,3 +3,12 @@ pyspark==4.1.1
 delta-spark==4.2.0
 pandas>=2.2.0
 matplotlib
+
+# BigQuery
+google-cloud-bigquery>=3.11
+google-cloud-bigquery-storage>=2.22
+db-dtypes>=1.1
+pandas-gbq>=0.19
+
+# dbt
+dbt-bigquery>=1.7

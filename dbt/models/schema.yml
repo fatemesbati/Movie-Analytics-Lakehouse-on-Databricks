@@ -1,0 +1,77 @@
+version: 2
+
+models:
+  - name: stg_ratings
+    description: Cleaned, cast, and deduplicated ratings (one row per user+movie pair)
+    columns:
+      - name: user_id
+        tests: [not_null]
+      - name: movie_id
+        tests: [not_null]
+      - name: rating
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]
+      - name: rated_at
+        tests: [not_null]
+
+  - name: stg_movies
+    description: Movies with release year extracted from title
+    columns:
+      - name: movie_id
+        tests: [not_null, unique]
+      - name: title
+        tests: [not_null]
+
+  - name: stg_tags
+    description: User-generated tags with cleaned nulls and empty strings removed
+    columns:
+      - name: user_id
+        tests: [not_null]
+      - name: movie_id
+        tests: [not_null]
+      - name: tag
+        tests: [not_null]
+
+  - name: silver_ratings_enriched
+    description: Ratings joined with movie metadata for downstream KPI models
+    columns:
+      - name: user_id
+        tests: [not_null]
+      - name: movie_id
+        tests: [not_null]
+      - name: rating
+        tests: [not_null]
+
+  - name: gold_top_movies
+    description: Top 20 most-rated movies (minimum 10 ratings), ordered by volume
+    columns:
+      - name: movie_id
+        tests: [not_null, unique]
+      - name: total_ratings
+        tests: [not_null]
+      - name: avg_rating
+        tests: [not_null]
+
+  - name: gold_genre_performance
+    description: Average rating and total volume per genre
+    columns:
+      - name: genre
+        tests: [not_null, unique]
+
+  - name: gold_ratings_over_time
+    description: Monthly rating activity for trend analysis
+    columns:
+      - name: month
+        tests: [not_null, unique]
+
+  - name: gold_user_activity
+    description: Users segmented into casual / active / power_user buckets
+    columns:
+      - name: user_segment
+        tests:
+          - not_null
+          - unique
+          - accepted_values:
+              values: ["casual", "active", "power_user"]
