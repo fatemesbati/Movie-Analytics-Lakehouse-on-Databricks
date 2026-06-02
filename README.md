@@ -78,6 +78,30 @@ Infrastructure provisioned by Terraform:
 
 ---
 
+## Data Modeling
+
+The Gold layer is structured around a **fact + dimension** model, making it straightforward to query for analytics and expose through a semantic layer.
+
+| Model | Type | Description |
+|---|---|---|
+| `silver_ratings_enriched` | Fact | One row per rating event — `userId`, `movieId`, `rating`, `timestamp` |
+| `stg_movies` | Dimension | Movie metadata: title, `release_year` extracted from title string |
+| `movies_by_genre` | Dimension | One row per movie–genre combination (exploded from pipe-separated string) |
+| `gold_user_activity` | Dimension | Users classified by volume: `casual`, `active`, `power_user` |
+
+**Business metrics defined in the Gold layer:**
+
+| Metric | Definition |
+|---|---|
+| Top movies | Most-rated movies with a minimum of 10 ratings, ordered by rating count |
+| Genre performance | Average rating and total rating volume per genre |
+| Rating trends | Monthly rating activity — useful for engagement and seasonality analysis |
+| User segments | User classification by rating volume to support retention and personalisation |
+
+These metrics form the semantic layer exposed to Metabase and are mirrored 1:1 as dbt mart models in BigQuery.
+
+---
+
 ## Pipeline Steps
 
 ### Local (PySpark + Delta Lake)
@@ -156,6 +180,22 @@ dbt/models/
 ### Monthly Rating Activity
 
 ![Ratings Over Time](charts/ratings_over_time.png)
+
+---
+
+## Data Quality Checks
+
+Quality is enforced at every layer of the pipeline:
+
+| Check | Where | What is verified |
+|---|---|---|
+| **Row count validation** | `notebooks/04_validate.py` | Silver row count ≤ Bronze (deduplication reduces rows); Gold tables are non-empty |
+| **Null checks** | `notebooks/04_validate.py` + dbt `not_null` tests | No null `userId`, `movieId`, or `rating` in Silver; key columns in all dbt models |
+| **Schema / value validation** | dbt `accepted_values` tests | `rating` must be one of `[0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]`; `user_segment` must be one of `[casual, active, power_user]` |
+| **Uniqueness** | dbt `unique` tests | `movieId` is unique in `stg_movies`; `(userId, movieId)` pair is unique after deduplication |
+| **Referential integrity** | Silver join in `ratings_enriched` | Every rating references a valid movie — orphaned ratings are surfaced as a null join |
+| **Range validation** | `notebooks/02_silver.py` filter | Ratings outside `[0.5, 5.0]` are dropped before writing to Silver |
+| **File integrity** | `notebooks/04_validate.py` | Chart PNG files exist and are non-empty after Gold run |
 
 ---
 
